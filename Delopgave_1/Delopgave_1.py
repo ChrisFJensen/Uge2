@@ -1,9 +1,7 @@
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 import numpy as np
-import word as wc
-
-
+import wordcloud as wc
 
 #Indlæs filen med navne
 Navne = open("Data/Navneliste.txt", "r").readlines()
@@ -64,13 +62,13 @@ NLT_sorted = {i: Navnelængde_tæller[i] for i in NLT_keys}
 NLT_sorted
 
 #Plot
-plt.bar(NLT_sorted.keys(), NLT_sorted.values())
 plt.bar(NLT_sorted.keys(), NLT_sorted.values(), width = 1, edgecolor="white", linewidth=0.7)
 plt.plot(NLT_sorted.keys(), NLT_sorted.values(), linewidth = 2)
 plt.xlim(1,11)
 plt.xticks(np.arange(1,11))
 plt.grid()
 plt.show()
+
 
 
 ## Der er ikke nogle duplikater så venter lige med det
