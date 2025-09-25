@@ -1,49 +1,51 @@
 import os
+import re
 
-def read_file(file_name: str, seperator=",", Var_numbers=0):
+def read_file(file_name: str, seperator=","):
     #Read the given file
     try:
         with open(file_name,"r") as file:
             data_string = file.readlines()
             #Checks if different different number of variables is given
-            if Var_numbers == 0:
-                Var_numbers= len(data_string[0].split(","))
+            Var_numbers= len(data_string[0].split(seperator))
             data = list(map(lambda x: x.strip("\n").split(seperator), data_string))
-            row_line = 0
-            for line in data:
-                line[0] = str(row_line)
-                row_line += 1
-            print(Var_numbers)
             return data
     #Adds specific text for file not existing
     except FileNotFoundError:
         print("File does not exist")
         #Add option to attempt a different name
+        New_name = input("Please type an existing file read or type q to quit:" )
+        return(New_name)
     # Other potential errors
     except:
-        print("We encountered an error")
-
-test = read_file("Data/source_data.csv")
+        print("We encountered an error while attempting to read file")
+        return("NEWERROROCCURREDCFJ")
 
 def clean_data(data: list):
     # Creates an empty list of useable and running total of removed lines
     Good_data = []
+    Unknow_error_data = []
+    Missing_data = []
     Var_Numbers = len(data[0])
     removed_lines = 0
-    for line in data:
-        #Checks if to many columns
+    #Uses rowline to fix customer_id
+    row_line = 1
+    for line in data[1:]:
+        line[0] = str(row_line)
+        row_line += 1
+        #Checks if too many columns
         while len(line) > Var_Numbers:
-            #Removes whitespace
-            if "" in line:
-                line.remove("")
-            #Checks if 2. column is either a number or Nan
-            elif float(line[1]):
+            try:
+                HV = float(line[1])
                 line.pop(1)
+            except:
+            #Removes whitespace
+                if "" in line:
+                    line.remove("")
             #Print rownumbers of problematic entries in data that i didn't catch
-            else:
-                print(line[0])
-                removed_lines += 1
-                break
+                else:
+                    Unknow_error_data.append(line)
+                    break
         if len(line)==Var_Numbers:
             # Checks if data is missing
             if "" in line:
@@ -51,19 +53,28 @@ def clean_data(data: list):
             # Checks if nan is a data point
             elif "nan" in line:
                 removed_lines += 1
+            #Check if emails contains @
+            elif re.search("@",line[2])==None:
+                removed_lines += 1
             # appends if no fault is found
             else:
-                Good_data.append(line)
+                try:
+                    HV = float(line[3])
+                    Good_data.append(line)
+                except:
+                    removed_lines +=1
+        elif len(line)<Var_Numbers:
+            Missing_data.append(line)
+            removed_lines += 1
         else:
-            print("missing data")
             removed_lines += 1
     #Printer antallet af linjer der er blevet fjernet
     print(f"removed:" + str(removed_lines) +" lines."  )
+    #In case every line is removed due to clean_data being custom for source_data.csv
+    if (removed_lines-len(data)+1)==0:
+        print("All lines have been removed. Data is likely uncompatible with function")
     #Returns a list with non-empty data with correct amount of variables per row
     return(Good_data)
-
-test2 = clean_data(test)
-
 
 #Function that writes to a csv formatted file
 def write_to_file(data: list, Destination_name: str):
@@ -71,40 +82,59 @@ def write_to_file(data: list, Destination_name: str):
     cur_dir = os.getcwd()
     Dest_path = os.path.join(cur_dir,Destination_name+".csv")
     #Checks if file already exists, and how to handle it
-    if os.path.isfile(Dest_path):
+    #Missing directory error
+    while os.path.isfile(Dest_path): # Unsure if write() has FileExistsError, so doing this to handle writing already existing files.
         print("File already exists.")
         print("To replace type r or replace.")
         New_dest = input("Please type a new file name(.csv is automatically added):")
         #Checks if user want to replace
         if New_dest in ["r","replace"]:
-            New_dest_path = Dest_path
+            break
         else:
-            New_dest_path = os.path.join(cur_dir,New_dest+".csv")
-        #Opens and writes to new file
-        try:
-            with open(New_dest_path, "w") as file:
-                for line in data:
-                    #Formats it so it corresponds to a .csv format
-                    file.write(f",".join(line)+"\n")
-        # Added for future error handling
-        except:
-            print("An error occured")
-    else:
-        #Opens and writes to new file
-        try:
-            with open(Dest_path, "w") as file:
-                for line in data:
-                    file.write(f",".join(line)+"\n")
-        # Added options for future error handling
-        except:
-            print("An error occurred")
+            Dest_path = os.path.join(cur_dir,New_dest+".csv")
+    New_dest_path = Dest_path
+    try:
+         with open(New_dest_path, "w") as file:
+            for line in data:
+                #Formats it so it corresponds to a .csv format
+                file.write(f",".join(line)+"\n")
+    except PermissionError:
+            print("Don't have required permission to write file")
+            New_dest = input("Please input a new destination: ")
+            return New_dest
+    except FileNotFoundError:
+            print("Invalid directory given")
+            New_dest = input("Please input a new destination: ")
+            return New_dest
 
 
 #Function that combines all other functions
-def All_together(file_name: str, Destination_name: str, Var_numbers=0, seperator=","):
-    Data_loaded = read_file(file_name,seperator, Var_numbers)
+def All_together(file_name: str, Destination_name: str, seperator=","):
+    Data_loaded = read_file(file_name,seperator)
+    #Handles if a nonexisting file is received
+    while type(Data_loaded)==str:
+        match Data_loaded:
+            case "q":
+                print("Recieved invalid file to read, quitting program")
+                return
+            case "NEWERROROCCURREDCFJ":
+                print("Ran into a unkown error when reading file. Quitting program")
+                return
+            case _:
+                New_file_name = Data_loaded
+                Data_loaded = read_file(New_file_name,seperator)
+    #Runs the data cleaning function
     Data_cleaned = clean_data(Data_loaded)
-    write_to_file(Data_cleaned,Destination_name)
+    #Option to handle new errors that i am not familiar with, or how to test for.
+    output_file = write_to_file(Data_cleaned,Destination_name)
+    while type(output_file)==str:
+        match output_file:
+            case "q":
+                print("Couldn't write file, exiting program")
+                return
+            case _:
+                New_dest = output_file
+                output_file = write_to_file(Data_cleaned,New_dest)
 
 if __name__ == "__main__":
-    All_together("Data/source_data.csv","We_gamed")
+    All_together("Data/source_data.csv","Delopgave_3/Clean_data")

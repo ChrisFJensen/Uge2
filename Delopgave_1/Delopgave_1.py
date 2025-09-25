@@ -3,72 +3,100 @@ import matplotlib.pyplot as plt
 import numpy as np
 import wordcloud as wc
 
-#Indlæs filen med navne
-Navne = open("Data/Navneliste.txt", "r").readlines()
 
-#Split navne op så de hver især er et element i en liste
-Navne_split = Navne[0].split(",")
+if __name__ == "__main__":
+    #read data
+    Navne = open("Data/Navneliste.txt", "r").readlines()
 
-#Fjern eventuelle mellemrum i starten og slutningen af hvert navn
-Navne_split = [navn.strip() for navn in Navne_split]
-print(Navne_split)
+    #Convert data to a list where each name is it's own element
+    Navne_split = Navne[0].split(",")
 
-#Sorter navnene i alfabetisk rækkefølge
-Navne_sorteret = sorted(Navne_split)
-print(Navne_sorteret)
+    #Removes whitespace from around each name
+    Navne_split = [navn.strip() for navn in Navne_split]
+    print(Navne_split)
 
-#Sorter Navne efter længde
-Navne_sorteret_længde = sorted(Navne_split, key=len)
-print(Navne_sorteret_længde)
+    #Sorts names alphebetically
+    Navne_sorteret = sorted(Navne_split)
+    print(Navne_sorteret)
+
+    #Sorts names by length
+    Navne_sorteret_længde = sorted(Navne_split, key=len)
+    print(Navne_sorteret_længde)
 
 
-#Pythondictionary til at tælle antal forekomster af hvert bogstav
-bogstav_tæller = {} #Laver et tomt dictionary
-for navn in Navne_sorteret: #Tjekker hvert navn i listen
-    for bogstav in navn.lower(): #Tjekker hvert bogstav i navnet, gør det til små bogstaver
-        if bogstav in bogstav_tæller: #Tjekker om bogstavet allerede er i dictionary
-            bogstav_tæller[bogstav] += 1 #Hvis det er, så øg tælleren med 1
+    #Empty dict to store the count for each letter
+    bogstav_tæller = {}
+    #Loop for each name in data
+    for navn in Navne_sorteret:
+        #Loop for each letter in name
+        for bogstav in navn.lower():
+            #if statements to add or create count for letter
+            if bogstav in bogstav_tæller:
+                bogstav_tæller[bogstav] += 1 
+            else:
+                bogstav_tæller[bogstav] = 1
+
+
+    #Function to sort dict keys alphabetically (for plot purpose)
+    def sort_dict(Dict: dict):
+        Dict_keys = list(Dict.keys())
+        Dict_keys.sort()
+        Dict_sorted = {i: Dict[i] for i in Dict_keys}
+        return(Dict_sorted)
+
+    bogstav_tæller_sorted = sort_dict(bogstav_tæller)
+    bogstav_tæller_sorted
+
+    # skal have lavet et pænere plot.
+    plt.bar(bogstav_tæller_sorted.keys(), bogstav_tæller_sorted.values(), width = 1, edgecolor="white", linewidth=0.7)
+    plt.xlabel("Bogstaver") #Sætter label på x-aksen
+    plt.ylabel("Forekomster") #Sætter label på y-aksen
+    plt.title("Forekomster af bogstaver i navne") #Sætter titel på grafen
+    plt.show()
+
+
+    #Generate word cloud
+    WC_test = wc.WordCloud(width = 1000, height = 500).generate_from_frequencies(bogstav_tæller_sorted)
+    plt.figure(figsize=(15,8))
+    plt.imshow(WC_test)
+    plt.show()
+
+
+    #List with Name length for each name
+    Word_count_list = [int(len(element)) for element in Navne_sorteret]
+
+
+    #Calculate mean and median
+    Word_Count_mean = float(np.mean(Word_count_list))
+    Word_count_median = float(np.median(Word_count_list))
+    Word_Count_mean
+    Word_count_median
+
+
+    #Create a dict with count of namelenghts
+    Dict_nl = {}
+    for count in Word_count_list:
+        if count in Dict_nl:
+            Dict_nl[count] += 1 
         else:
-            bogstav_tæller[bogstav] = 1 #Hvis det ikke er, så sæt tælleren til 1
+            Dict_nl[count] = 1
 
-bogstav_tæller.get("a", 0) #Tjekker om det virker med a
-bogstav_tæller.get("æ", 0) #Tjekker om det virker med æ, som ikke burde optræde
+    Dict_nl_sorted = sort_dict(Dict_nl)
 
-
-## Kig på at få sorteret keys i alfabetisk rækkefølge
-plt.hist(bogstav_tæller.keys(), weights=bogstav_tæller.values())
-plt.xlabel("Bogstaver") #Sætter label på x-aksen
-plt.ylabel("Forekomster") #Sætter label på y-aksen
-plt.title("Forekomster af bogstaver i navne") #Sætter titel på grafen
-plt.show()
-
-Word_count_list = [int(len(element)) for element in Navne_sorteret] #Laver en list med længden af hvert element
-
-Word_Count_mean = float(np.mean(Word_count_list)) #udregn gennemsnittet
-Word_count_median = float(np.median(Word_count_list)) #udregn medianen
-
-#Dette var en tidligere implementation for det ovenstående
-Navnelængde_tæller = {}
-for navn in Navne_sorteret: #Laver den samme metode med med ord lngde istedet for bogstaver
-    if len(navn) in Navnelængde_tæller:
-        Navnelængde_tæller[len(navn)] += 1
-    else:
-        Navnelængde_tæller[len(navn)] = 1
-
-#Sortering af keys
-NLT_keys = list(Navnelængde_tæller.keys())
-NLT_keys.sort()
-NLT_sorted = {i: Navnelængde_tæller[i] for i in NLT_keys}
-NLT_sorted
-
-#Plot
-plt.bar(NLT_sorted.keys(), NLT_sorted.values(), width = 1, edgecolor="white", linewidth=0.7)
-plt.plot(NLT_sorted.keys(), NLT_sorted.values(), linewidth = 2)
-plt.xlim(1,11)
-plt.xticks(np.arange(1,11))
-plt.grid()
-plt.show()
+    #Plot
+    plt.grid()
+    plt.bar(Dict_nl_sorted.keys(), Dict_nl_sorted.values(), width = 1, edgecolor="white", linewidth=0.7)
+    plt.xlim(1,11)
+    plt.xticks(np.arange(1,11))
+    plt.show()
 
 
+    #test for duplicate
+    #Can use Dict since they can't store duplicate keys
+    Name_dict = {}
+    for name in Navne_sorteret:
+        Name_dict[name]=1
 
-## Der er ikke nogle duplikater så venter lige med det
+    #Check if any duplicates
+    len(Name_dict)-len(Navne_split)
+    print("since there are the same amount of elements in the dictionary there are no duplicate names")
