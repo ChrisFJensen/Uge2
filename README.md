@@ -1,27 +1,36 @@
-## Uge2
-Mine løsninger bliver beskrevet i deres tilsvarende afsnit.
+## Uge2 - Specialisterne Academy
+My solutions to the assignements given for week 2 of Specialisterne Academy. Each solution can be found in it's corresponding folder.
+##  Description
+My solutions to the assignments that was given. The use 
 
-### Delopgave 1
-Delopgave 1 bliver løs i mappen Delopgave 1. Koden består bare af kommandoer der individuelt udfører de opgaver som opgaven stillede. Burde kan bare køres direkte fra terminal.
-Anvendte pakker:
+## Dependencies
+My solutions were written in python 3.13.7 and uses the following modules:
 - Numpy
-- Matplotplib
-- Wordcloud
-
-### Delopgave 2
-Delopgave 2 bliver løst i mappen Delopgave 2. Koden består af en funktion der udfører den beskrevne opgave. Funktionen skal bruge navn på fil at læse og navn på mappe i currentWD for at køre, og begge paths skal findes for at det eksekverer.
-Anvendte pakker:
+- Pandas
 - os
 - re
+- Wordcloud
 
-### Delopgave 3
-Delopgave 3 bliver løst i mappen Delopgave 3. Koden består af flere funktion der hver løser en af de beskrevne opgaver, inden det hele bliver samlet til en endelig funktion. Den endelig funktion har variablerne file_name og Destination_name, som er hvilken fil der skal læses og filnavnet som der skrives til.
-Der gøres opmærksomt på at ".csv" automatisk tilføjet til filnavnet, så det skal ikke specificeres under input.
-Anvendte pakker:
-- os
+## Installing
+The required modules can be installed from the attached requirements.txt file.
+Before running the program please ensure the following.
+- For assignments where We write to a file, please ensure that the desired destination for the document exists within the WD.
 
-### Delopgave 4
-Delopgave 4 bliver løst i mappen Delopgave 4. Koden består af simple kommandoer der udfører det ønskede arbejde.
-anvendte pakker:
-- Pandas
-- matplotlib
+## Executing the program
+The scripts for Delopgave 1 and Delopgave 4 can just be run.
+Delopgave 2 has the function
+```
+Log_analysis(Log_file,output_dir_name)
+
+```
+Which takes the log_file and output_dir_name as strings, where it reads the log_file and outpur
+t_dir_name is the name of the folder where the scripts writes to.
+
+Delopgave 3 has the function:
+```
+All_together(file_name: str, Destination_name: str, Var_numbers=0, seperator=",")
+```
+The function takes file_name to read and Destination_name as the name of the document to write to as mandatory arguments, with Var_numbers and seperator being optional. It is recommended not to change the optional arguments as of this moment. 
+
+## Problems
+I found the aspects of delopgave 3 the most challenging since it is what is the furthest from the experience i have from my studies. 
