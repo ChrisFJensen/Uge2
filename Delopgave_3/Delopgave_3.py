@@ -83,7 +83,7 @@ def write_to_file(data: list, Destination_name: str):
     Dest_path = os.path.join(cur_dir,Destination_name+".csv")
     #Checks if file already exists, and how to handle it
     #Missing directory error
-    while os.path.isfile(Dest_path): # Unsure if write() has FileExistsError, so doing this to handle writing already existing files.
+    while os.path.isfile(Dest_path):
         print("File already exists.")
         print("To replace type r or replace.")
         New_dest = input("Please type a new file name(.csv is automatically added):")
@@ -98,10 +98,12 @@ def write_to_file(data: list, Destination_name: str):
             for line in data:
                 #Formats it so it corresponds to a .csv format
                 file.write(f",".join(line)+"\n")
+    #If received permission ask for different output
     except PermissionError:
             print("Don't have required permission to write file")
             New_dest = input("Please input a new destination: ")
             return New_dest
+    # If received a path that contains a nonexistent folder, ask for different output
     except FileNotFoundError:
             print("Invalid directory given")
             New_dest = input("Please input a new destination: ")
@@ -127,6 +129,8 @@ def All_together(file_name: str, Destination_name: str, seperator=","):
     Data_cleaned = clean_data(Data_loaded)
     #Option to handle new errors that i am not familiar with, or how to test for.
     output_file = write_to_file(Data_cleaned,Destination_name)
+    # if write_to_filed failed to write
+    # Allows user to change output path
     while type(output_file)==str:
         match output_file:
             case "q":

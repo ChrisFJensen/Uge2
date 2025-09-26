@@ -3,100 +3,135 @@ import matplotlib.pyplot as plt
 import numpy as np
 import wordcloud as wc
 
+def open_data(file_name: str):
+    # Open file name and convert it to a list of names
+    data = open(file_name,"r").readlines()
+    data_split = data[0].split(",")
+    data_split = [line.strip() for line in data_split]
+    return data_split
+
+def sort_data(data: list, sort="alphabetically"):
+    if sort=="alphabetically":
+        return sorted(data)
+    elif sort in ["length","len"]:
+        return sorted(data, key=len)
+    else:
+        print("Unsopported sort type given")
+        return data
+
+
+def letter_counter(data: list):
+    #Empty dict to store the count for each letter
+    letter_count = {}
+    #Loop over each data entry
+    for line in data:
+        #Loop for each letter in line
+        for letter in line.lower():
+            # Check whether letter already added to dict.
+            if letter in letter_count:
+                letter_count[letter] += 1
+            else:
+                letter_count[letter] = 1
+    return  letter_count
+
+#Function to sort dict keys alphabetically (for plot purpose)
+def sort_dict(Dict: dict):
+    Dict_keys = list(Dict.keys())
+    Dict_keys.sort()
+    Dict_sorted = {i: Dict[i] for i in Dict_keys}
+    return(Dict_sorted)
+
+
+def word_count_mean_median(data: list):
+    # Convert to list of name lengths
+    data_name_length = [int(len(line)) for line in data]
+    #Create empty dict to store mean and median of name lenght
+    mean_median_dict = {}
+    #Uses numpys mean and median to get the values for me
+    mean_median_dict["mean"] = float(np.mean(data_name_length))
+    mean_median_dict["median"] = float(np.median(data_name_length))
+    return mean_median_dict
+
+def word_length_counter(data: list):
+    #Convert to list of name lengths
+    data_name_length = [int(len(line)) for line in data]
+    #Create empty dict to store count for each name length
+    lenght_dict = {}
+    # Count how many times a length appears
+    for length in data_name_length:
+        if length in lenght_dict:
+            lenght_dict[length] += 1
+        else:
+            lenght_dict[length] = 1
+    return lenght_dict
+
+
+def check_dupe(data: list):
+    #Create a dict to store names as keys since they can't be duplicates
+    unique_dict = {}
+    for name in data:
+        unique_dict[name] = 1
+    #Checks if there are the same amount of names in list as in dict
+    difference = len(data)-len(unique_dict)
+    #Print depend on result
+    if difference == 0:
+        print("No duplicates were found in the data")
+    else:
+        print("The data contained duplicates")
+
 
 if __name__ == "__main__":
-    #read data
-    Navne = open("Data/Navneliste.txt", "r").readlines()
+    #Read data to a list
+    name_data = open_data("Data/Navneliste.txt")
+    print("Unsorted:")
+    print(name_data[:10])
+    
+    # Sort alphabetically
+    name_data_sorted = sort_data(name_data)
+    print("Sorted alphebetically:")
+    print(name_data_sorted[:10])
 
-    #Convert data to a list where each name is it's own element
-    Navne_split = Navne[0].split(",")
+    #Sort by length
+    name_data_sorted_len = sort_data(name_data,"len")
+    print("Sorted by length: ")
+    print(name_data_sorted_len[:10])
 
-    #Removes whitespace from around each name
-    Navne_split = [navn.strip() for navn in Navne_split]
-    print(Navne_split)
+    #Counts the letters
+    letter_count = letter_counter(name_data)
 
-    #Sorts names alphebetically
-    Navne_sorteret = sorted(Navne_split)
-    print(Navne_sorteret)
+    #Sorts the keys alphabetically
+    letter_count = sort_dict(letter_count)
+    print(f"a appears: {letter_count.get("a",0)} times")
+    print(f"æ appears: {letter_count.get("æ",0)} times")
 
-    #Sorts names by length
-    Navne_sorteret_længde = sorted(Navne_split, key=len)
-    print(Navne_sorteret_længde)
-
-
-    #Empty dict to store the count for each letter
-    bogstav_tæller = {}
-    #Loop for each name in data
-    for navn in Navne_sorteret:
-        #Loop for each letter in name
-        for bogstav in navn.lower():
-            #if statements to add or create count for letter
-            if bogstav in bogstav_tæller:
-                bogstav_tæller[bogstav] += 1 
-            else:
-                bogstav_tæller[bogstav] = 1
-
-
-    #Function to sort dict keys alphabetically (for plot purpose)
-    def sort_dict(Dict: dict):
-        Dict_keys = list(Dict.keys())
-        Dict_keys.sort()
-        Dict_sorted = {i: Dict[i] for i in Dict_keys}
-        return(Dict_sorted)
-
-    bogstav_tæller_sorted = sort_dict(bogstav_tæller)
-    bogstav_tæller_sorted
-
-    # skal have lavet et pænere plot.
-    plt.bar(bogstav_tæller_sorted.keys(), bogstav_tæller_sorted.values(), width = 1, edgecolor="white", linewidth=0.7)
-    plt.xlabel("Bogstaver") #Sætter label på x-aksen
-    plt.ylabel("Forekomster") #Sætter label på y-aksen
-    plt.title("Forekomster af bogstaver i navne") #Sætter titel på grafen
+    # Plot letter usage as a bar plot
+    plt.bar(letter_count.keys(), letter_count.values(), width = 1, edgecolor="white", linewidth=0.7)
+    plt.xlabel("Bogstaver") #Labels X-axis
+    plt.ylabel("Forekomster") #Labels Y-axis
+    plt.title("Forekomster af bogstaver i navne") #Adds title to plot
     plt.show()
-
 
     #Generate word cloud
-    WC_test = wc.WordCloud(width = 1000, height = 500).generate_from_frequencies(bogstav_tæller_sorted)
-    plt.figure(figsize=(15,8))
+    WC_test = wc.WordCloud(width = 500, height = 250, background_color="white").generate_from_frequencies(letter_count)
     plt.imshow(WC_test)
+    plt.title("Letter Wordcloud")
     plt.show()
 
+    #Analyse name length
+    name_length_mean_median = word_count_mean_median(name_data)
+    print(f"Mean is: {name_length_mean_median["mean"]}")
+    print(f"Median is: {name_length_mean_median["median"]}")
 
-    #List with Name length for each name
-    Word_count_list = [int(len(element)) for element in Navne_sorteret]
-
-
-    #Calculate mean and median
-    Word_Count_mean = float(np.mean(Word_count_list))
-    Word_count_median = float(np.median(Word_count_list))
-    Word_Count_mean
-    Word_count_median
-
-
-    #Create a dict with count of namelenghts
-    Dict_nl = {}
-    for count in Word_count_list:
-        if count in Dict_nl:
-            Dict_nl[count] += 1 
-        else:
-            Dict_nl[count] = 1
-
-    Dict_nl_sorted = sort_dict(Dict_nl)
-
+    # Create dict of name_lengths for plotting purposes
+    name_length_count = word_length_counter(name_data)
+    name_length_count = sort_dict(name_length_count)
+    
     #Plot
-    plt.grid()
-    plt.bar(Dict_nl_sorted.keys(), Dict_nl_sorted.values(), width = 1, edgecolor="white", linewidth=0.7)
+    plt.bar(name_length_count.keys(), name_length_count.values(), width = 1, edgecolor="white", linewidth=0.7)
     plt.xlim(1,11)
     plt.xticks(np.arange(1,11))
+    plt.title("Distribution of letter length")
     plt.show()
 
-
-    #test for duplicate
-    #Can use Dict since they can't store duplicate keys
-    Name_dict = {}
-    for name in Navne_sorteret:
-        Name_dict[name]=1
-
-    #Check if any duplicates
-    len(Name_dict)-len(Navne_split)
-    print("since there are the same amount of elements in the dictionary there are no duplicate names")
+    # Check if there is duplicates in data
+    check_dupe(name_data)
